@@ -1,0 +1,12 @@
+.navLink {
+  color: white;
+  padding: 10px 0;
+  font-size: 1.25rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  margin: 0 20px;
+}
+
+.navLink:first-of-type {
+  margin-left: 0;
+}
