@@ -52,7 +52,7 @@ const Home = () => {
     }
 
     setIsMinting(true);
-    const amount = mintPrice * parseInt(mintQuantity) * 1e8;
+    const amount = mintPrice * parseInt(mintQuantity) * 1e18;
 
     mint(address, amount, parseInt(mintQuantity))
       .then((result: any) => {
@@ -79,8 +79,7 @@ const Home = () => {
       });
 
       getMintPrice().then((price: any) => {
-        console.log(price);
-        setMintPrice(parseInt(price) / 1e8);
+        setMintPrice(parseInt(price) / 1e18);
       });
     }
   }, [address]);
