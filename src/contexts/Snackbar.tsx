@@ -37,8 +37,12 @@ export const SnackbarProvider = ({ children }: any) => {
   return (
     <SnackbarContext.Provider value={{ showSnackbar: setSnackbar }}>
       {children}
-      <Snackbar open={!!snackbar} autoHideDuration={4000} onClose={handleClose}>
-        {
+      {snackbar && (
+        <Snackbar
+          open={!!snackbar}
+          autoHideDuration={4000}
+          onClose={handleClose}
+        >
           <Alert
             onClose={handleClose}
             severity={snackbar?.severity}
@@ -46,8 +50,8 @@ export const SnackbarProvider = ({ children }: any) => {
           >
             {snackbar?.message}
           </Alert>
-        }
-      </Snackbar>
+        </Snackbar>
+      )}
     </SnackbarContext.Provider>
   );
 };

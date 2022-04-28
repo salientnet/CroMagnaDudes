@@ -25,18 +25,21 @@ export const AuthProvider = ({ children }: any) => {
       return;
     }
 
-    setLoading(true);
-
     try {
+      setLoading(true);
+
       if (ethereum) {
         try {
-          // check if the chain to connect to is installed
+          const accounts = await ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          handleAccountsChanged(accounts);
+
           await ethereum.request({
             method: "wallet_switchEthereumChain",
             params: [{ chainId: "0x19" }],
           });
         } catch (error: any) {
-          // if it is not, then install it into the user MetaMask
           if (error.code === 4902) {
             try {
               await ethereum.request({
@@ -57,21 +60,20 @@ export const AuthProvider = ({ children }: any) => {
               });
             } catch (addError) {
               console.error(addError);
-              setLoading(false);
-
-              return;
             }
+          } else if (error.code === 4001) {
+            showSnackbar({
+              severity: "error",
+              message: "Request denied",
+            });
           }
 
           console.error(error);
-          setLoading(false);
-
-          return;
         }
       } else {
         showSnackbar({
           severity: "error",
-          message: '"No provider was found"',
+          message: "No provider was found",
         });
         setLoading(false);
 
@@ -79,10 +81,9 @@ export const AuthProvider = ({ children }: any) => {
       }
 
       const accounts = await ethereum.request({ method: "eth_accounts" });
+      handleAccountsChanged(accounts);
       const chainId = await ethereum.request({ method: "eth_chainId" });
-
-      setAddress(accounts[0]);
-      setChainId(chainId);
+      handleChainChanged(chainId);
 
       ethereum.on("accountsChanged", handleAccountsChanged);
       ethereum.on("chainChanged", handleChainChanged);
@@ -103,8 +104,17 @@ export const AuthProvider = ({ children }: any) => {
   };
 
   const handleAccountsChanged = (accounts: Array<any>) => {
-    const account = accounts[0] || null;
-    setAddress(account);
+    if (accounts.length === 0) {
+      showSnackbar({
+        severity: "error",
+        message: "Please connect to MetaMask.",
+      });
+
+      setAddress(null);
+      return;
+    }
+
+    setAddress(accounts[0]);
   };
 
   const handleChainChanged = (cId: string) => {
