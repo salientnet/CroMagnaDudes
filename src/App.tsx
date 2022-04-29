@@ -3,7 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { Container } from "@mui/material";
 
 import Loading from "./components/Loading";
-import Header from "./components/Header/index";
+import Header from "./components/Header";
 import Home from "./views/Home";
 import NFTList from "./views/NFTList";
 

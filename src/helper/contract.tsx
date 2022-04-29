@@ -25,10 +25,10 @@ export const getMintPrice = () => {
   return contract.methods.getMintPrice().call();
 };
 
-export const mint = (address: string, amount: number, quantity: number) => {
+export const mint = (address: string, amount: any, quantity: number) => {
   return contract.methods
     .mintMany(quantity)
-    .send({ from: address, value: amount.toString() });
+    .send({ from: address, value: amount });
 };
 
 export const tokenOfOwnerByIndex = (owner: string, index: number) => {

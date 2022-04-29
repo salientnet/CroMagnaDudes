@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import Web3 from "web3";
 import Web3Modal from "web3modal";
 
 import { useSnackbar } from "./Snackbar";
@@ -130,6 +129,7 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     connect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Lightbox from "react-image-lightbox";
 import Web3 from "web3";
 import { Box, Grid, Typography } from "@mui/material";
+import Image from "material-ui-image";
 
 import {
   balanceOf,
@@ -69,6 +70,7 @@ const NFTList = () => {
     if (address) {
       fetchNFTs();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address]);
 
   return (
@@ -93,11 +95,12 @@ const NFTList = () => {
                   lg={3}
                   sx={{ cursor: "pointer" }}
                 >
-                  <img
+                  <Image
                     src={token.image}
                     alt={token.name}
-                    width="100%"
-                    style={{borderRadius: "20px"}}
+                    imageStyle={{ height: "auto", borderRadius: "20px" }}
+                    aspectRatio={1156 / 1655}
+                    style={{ borderRadius: "20px" }}
                     onClick={() => showLightBox(token)}
                   />
                 </Grid>
