@@ -1,11 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  IconButton,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { Box, Typography, IconButton, Select, MenuItem } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Web3 from "web3";
 import Modal from "react-modal";
@@ -22,6 +16,7 @@ import {
   web3Instance,
   tokenURI,
 } from "../helper/contract";
+import ImageLoading from "../components/ImageLoading";
 
 const Home = () => {
   const [mintPrice, setMintPrice] = useState<number>(0);
@@ -163,6 +158,7 @@ const Home = () => {
             alt={newTokenInfo.name}
             imageStyle={{ height: "auto", borderRadius: "20px" }}
             aspectRatio={1156 / 1655}
+            loading={<ImageLoading />}
             style={{ borderRadius: "20px" }}
           />
           <Typography mt="20px">{newTokenInfo.description}</Typography>
