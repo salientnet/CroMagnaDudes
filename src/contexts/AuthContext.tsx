@@ -129,7 +129,6 @@ export const AuthProvider = ({ children }: any) => {
 
   useEffect(() => {
     connect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

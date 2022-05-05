@@ -178,8 +178,7 @@ const Home = () => {
           marginTop: "200px",
           width: "500px",
           height: "200px",
-          backgroundColor: "#cc9dff",
-          opacity: 0.9,
+          backgroundColor: "#de8e4b",
           borderRadius: "10px",
         }}
       >
@@ -196,9 +195,6 @@ const Home = () => {
           variant="contained"
           sx={{
             height: "40px",
-            ":disabled": {
-              backgroundColor: "primary.light",
-            },
           }}
         >
           Mint

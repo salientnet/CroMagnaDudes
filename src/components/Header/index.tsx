@@ -26,8 +26,8 @@ const Header = () => {
         <Link className="navLink" to="/">
           <img width="40" src={LogoImage} alt="logo" style={{borderRadius: "50%"}} />
         </Link>
-        <Link className="navLink" to="/nftlist">
-          My NFTs
+        <Link className="navLink" to="/dashboard">
+          Dashboard
         </Link>
       </Box>
       <Connect />

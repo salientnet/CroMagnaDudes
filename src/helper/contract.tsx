@@ -34,3 +34,11 @@ export const mint = (address: string, amount: any, quantity: number) => {
 export const tokenOfOwnerByIndex = (owner: string, index: number) => {
   return contract.methods.tokenOfOwnerByIndex(owner, index).call();
 };
+
+export const getReflectionBalances = (address: string) => {
+  return contract.methods.getReflectionBalances().call({ from: address });
+};
+
+export const claimRewards = (address: string) => {
+  return contract.methods.claimRewards().send({ from: address });
+};

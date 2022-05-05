@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Lightbox from "react-image-lightbox";
 import Web3 from "web3";
 import { Box, Grid, Typography, Chip, Stack } from "@mui/material";
+import LoadingButton from "@mui/lab/LoadingButton";
 import Image from "material-ui-image";
 
 import {
@@ -9,7 +10,10 @@ import {
   tokenOfOwnerByIndex,
   tokenURI,
   web3Instance,
+  getReflectionBalances,
+  claimRewards,
 } from "../helper/contract";
+import { fromWei } from "../helper/utils";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/Snackbar";
 import Loading from "../components/Loading";
@@ -23,6 +27,9 @@ const NFTList = () => {
   const [tokens, setTokens] = useState<any[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<any>(null);
+  const [countByUser, setCountsByUser] = useState<string>("0");
+  const [reflectionBalances, setReflectionBalances] = useState<string>("0");
+  const [isClaiming, setIsClaiming] = useState(false);
 
   web3Instance.setProvider(Web3.givenProvider);
 
@@ -37,8 +44,7 @@ const NFTList = () => {
         <Stack direction="row" flexWrap="wrap" spacing={1}>
           {traits.map((trait: any) => {
             if (
-              trait.value === "NONE" ||
-              trait.value === "None" ||
+              trait.value.toLowerCase() === "none" ||
               trait.trait_type === "body"
             ) {
               return <></>;
@@ -59,21 +65,45 @@ const NFTList = () => {
     );
   };
 
+  const claim = () => {
+    setIsClaiming(true);
+
+    claimRewards(address)
+      .then((res: any) => {
+        setIsClaiming(false);
+        showSnackbar({
+          severity: "success",
+          message: "You got the rewards",
+        });
+      })
+      .catch((err: any) => {
+        setIsClaiming(false);
+        showSnackbar({
+          severity: "error",
+          message: "Failed to claim",
+        });
+      });
+  };
+
   useEffect(() => {
-    const fetchNFTs = async () => {
+    const fetchNFTData = async () => {
       setIsLoading(true);
 
       try {
         const nftCounts = await balanceOf(address);
+        setCountsByUser(nftCounts);
 
-        if (!nftCounts.length) {
+        if (+nftCounts === 0) {
           setNoNFT(true);
           setIsLoading(false);
           return;
         }
 
+        const reflections = await getReflectionBalances(address);
+        setReflectionBalances(parseFloat(fromWei(reflections)).toFixed(2));
+
         let tokenIds = [] as any;
-        for (let index = 0; index < nftCounts; index++) {
+        for (let index = 0; index < +nftCounts; index++) {
           tokenIds.push(await tokenOfOwnerByIndex(address, index));
         }
 
@@ -97,7 +127,7 @@ const NFTList = () => {
     };
 
     if (address) {
-      fetchNFTs();
+      fetchNFTData();
     }
   }, [address]);
 
@@ -106,10 +136,66 @@ const NFTList = () => {
       {isLoading ? (
         <Loading />
       ) : (
-        <div>
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-around",
+              alignItems: "center",
+              backgroundColor: "#de8e4b",
+              height: "300px",
+              borderRadius: "10px",
+              padding: "20px",
+              marginBottom: "50px",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <Typography component="h2" fontSize="2rem" color="#fff" textTransform="capitalize">
+                Total counts minted
+              </Typography>
+              <Typography fontSize="2rem" fontWeight={600} color="#fff">
+                {countByUser}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <Typography component="h2" fontSize="2rem" color="#fff" textTransform="capitalize">
+                Total rewards
+              </Typography>
+              <Typography
+                fontSize="2rem"
+                fontWeight={600}
+                mb="20px"
+                color="#fff"
+              >
+                {reflectionBalances}
+              </Typography>
+              <LoadingButton
+                onClick={claim}
+                loading={isClaiming}
+                variant="contained"
+                disabled={parseFloat(reflectionBalances) === 0}
+              >
+                Claim
+              </LoadingButton>
+            </Box>
+          </Box>
           {noNFT ? (
             <Box>
-              <Typography>No Results</Typography>
+              <Typography fontSize="2rem" color="#fff" textAlign="center">
+                No Results
+              </Typography>
             </Box>
           ) : (
             <Grid container spacing={2}>
@@ -147,7 +233,7 @@ const NFTList = () => {
               )}
             </Grid>
           )}
-        </div>
+        </>
       )}
     </>
   );
