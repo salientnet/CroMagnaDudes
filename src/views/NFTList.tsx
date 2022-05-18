@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import Lightbox from "react-image-lightbox";
 import Web3 from "web3";
-import { Box, Grid, Typography, Chip, Stack } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  Chip,
+  Stack,
+  Select,
+  MenuItem,
+} from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Image from "material-ui-image";
 
@@ -13,6 +21,7 @@ import {
   getReflectionBalances,
   claimRewards,
 } from "../helper/contract";
+import { NFT_TYPE } from "../helper/types";
 import { fromWei } from "../helper/utils";
 import { useAuthContext } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/Snackbar";
@@ -22,13 +31,37 @@ import ImageLoading from "../components/ImageLoading";
 const NFTList = () => {
   const { address } = useAuthContext();
   const { showSnackbar } = useSnackbar();
+
+  const [nftType, setNftType] = useState(NFT_TYPE.TIER_1);
   const [isLoading, setIsLoading] = useState(false);
-  const [noNFT, setNoNFT] = useState(false);
-  const [tokens, setTokens] = useState<any[]>([]);
+
+  const [nftCounts, setNftCounts] = useState({
+    [NFT_TYPE.TIER_1]: "0",
+    [NFT_TYPE.TIER_2]: "0",
+    [NFT_TYPE.TIER_3]: "0",
+  });
+
+  const [noNFT, setNoNFT] = useState({
+    [NFT_TYPE.TIER_1]: false,
+    [NFT_TYPE.TIER_2]: false,
+    [NFT_TYPE.TIER_3]: false,
+  });
+
+  const [reflectionBalances, setReflectionBalances] = useState({
+    [NFT_TYPE.TIER_1]: "0",
+    [NFT_TYPE.TIER_2]: "0",
+    [NFT_TYPE.TIER_3]: "0",
+  });
+
+  const [tokens, setTokens] = useState({
+    [NFT_TYPE.TIER_1]: [],
+    [NFT_TYPE.TIER_2]: [],
+    [NFT_TYPE.TIER_3]: [],
+  });
+
   const [isOpen, setIsOpen] = useState(false);
   const [selectedToken, setSelectedToken] = useState<any>(null);
-  const [countByUser, setCountsByUser] = useState<string>("0");
-  const [reflectionBalances, setReflectionBalances] = useState<string>("0");
+
   const [isClaiming, setIsClaiming] = useState(false);
 
   web3Instance.setProvider(Web3.givenProvider);
@@ -65,10 +98,14 @@ const NFTList = () => {
     );
   };
 
-  const claim = () => {
+  const changeType = (e: any) => {
+    setNftType(e.target.value);
+  };
+
+  const claim = (type: NFT_TYPE) => {
     setIsClaiming(true);
 
-    claimRewards(address)
+    claimRewards(address, type)
       .then((res: any) => {
         setIsClaiming(false);
         showSnackbar({
@@ -85,51 +122,64 @@ const NFTList = () => {
       });
   };
 
-  useEffect(() => {
-    const fetchNFTData = async () => {
-      setIsLoading(true);
+  const fetchNFTData = async (type: NFT_TYPE) => {
+    setIsLoading(true);
 
-      try {
-        const nftCounts = await balanceOf(address);
-        setCountsByUser(nftCounts);
+    try {
+      const counts = await balanceOf(address, type);
+      setNftCounts((v) => ({
+        ...v,
+        [type]: counts,
+      }));
 
-        if (+nftCounts === 0) {
-          setNoNFT(true);
-          setIsLoading(false);
-          return;
-        }
-
-        const reflections = await getReflectionBalances(address);
-        setReflectionBalances(parseFloat(fromWei(reflections)).toFixed(2));
-
-        let tokenIds = [] as any;
-        for (let index = 0; index < +nftCounts; index++) {
-          tokenIds.push(await tokenOfOwnerByIndex(address, index));
-        }
-
-        const tokenURIs = await Promise.all(
-          tokenIds.map((id: any) => tokenURI(id))
-        );
-
-        const tokensInfo = await Promise.all(
-          tokenURIs.map(async (uri: string) => (await fetch(uri)).json())
-        );
-
-        setTokens(tokensInfo);
+      if (+counts === 0) {
+        setNoNFT((v) => ({
+          ...v,
+          [type]: true,
+        }));
         setIsLoading(false);
-      } catch (err: any) {
-        setIsLoading(false);
-        showSnackbar({
-          severity: "error",
-          message: "Failed to fetch data",
-        });
+
+        return;
       }
-    };
 
-    if (address) {
-      fetchNFTData();
+      const reflections = await getReflectionBalances(address, type);
+      setReflectionBalances((v) => ({
+        ...v,
+        [type]: parseFloat(fromWei(reflections)).toFixed(2),
+      }));
+
+      let tokenIds = [] as any;
+      for (let index = 0; index < +counts; index++) {
+        tokenIds.push(await tokenOfOwnerByIndex(address, index, type));
+      }
+
+      const tokenURIs = await Promise.all(
+        tokenIds.map((id: any) => tokenURI(id, type))
+      );
+
+      const tokensInfo = await Promise.all(
+        tokenURIs.map(async (uri: string) => (await fetch(uri)).json())
+      );
+      setTokens((v) => ({
+        ...v,
+        [type]: tokensInfo,
+      }));
+
+      setIsLoading(false);
+    } catch (err: any) {
+      setIsLoading(false);
+      showSnackbar({
+        severity: "error",
+        message: "Failed to fetch data",
+      });
     }
-  }, [address]);
+  };
+
+  useEffect(() => {
+    if (address) {
+      fetchNFTData(nftType);
+    }
+  }, [address, nftType]);
 
   return (
     <>
@@ -137,12 +187,27 @@ const NFTList = () => {
         <Loading />
       ) : (
         <>
+          <Select
+            value={nftType}
+            onChange={changeType}
+            sx={{
+              backgroundColor: "common.white",
+              marginBottom: "16px",
+              minWidth: "150px",
+            }}
+          >
+            {Object.values(NFT_TYPE).map((type, key) => (
+              <MenuItem value={type} key={key}>
+                {`${type} Age`}
+              </MenuItem>
+            ))}
+          </Select>
           <Box
             sx={{
               display: "flex",
               justifyContent: "space-around",
               alignItems: "center",
-              backgroundColor: "#de8e4b",
+              backgroundColor: "#b4b8ba",
               height: "300px",
               borderRadius: "10px",
               padding: "20px",
@@ -156,11 +221,16 @@ const NFTList = () => {
                 alignItems: "center",
               }}
             >
-              <Typography component="h2" fontSize="2rem" color="#fff" textTransform="capitalize">
+              <Typography
+                component="h2"
+                fontSize="2rem"
+                color="#fff"
+                textTransform="capitalize"
+              >
                 Total counts minted
               </Typography>
               <Typography fontSize="2rem" fontWeight={600} color="#fff">
-                {countByUser}
+                {nftCounts[nftType]}
               </Typography>
             </Box>
             <Box
@@ -170,7 +240,12 @@ const NFTList = () => {
                 alignItems: "center",
               }}
             >
-              <Typography component="h2" fontSize="2rem" color="#fff" textTransform="capitalize">
+              <Typography
+                component="h2"
+                fontSize="2rem"
+                color="#fff"
+                textTransform="capitalize"
+              >
                 Total rewards
               </Typography>
               <Typography
@@ -179,19 +254,19 @@ const NFTList = () => {
                 mb="20px"
                 color="#fff"
               >
-                {reflectionBalances}
+                {reflectionBalances[nftType]}
               </Typography>
               <LoadingButton
-                onClick={claim}
+                onClick={() => claim(nftType)}
                 loading={isClaiming}
                 variant="contained"
-                disabled={parseFloat(reflectionBalances) === 0}
+                disabled={parseFloat(reflectionBalances[nftType]) === 0}
               >
                 Claim
               </LoadingButton>
             </Box>
           </Box>
-          {noNFT ? (
+          {noNFT[nftType] ? (
             <Box>
               <Typography fontSize="2rem" color="#fff" textAlign="center">
                 No Results
@@ -199,7 +274,7 @@ const NFTList = () => {
             </Box>
           ) : (
             <Grid container spacing={2}>
-              {tokens.map((token: any) => (
+              {tokens[nftType].map((token: any) => (
                 <Grid
                   item
                   key={token.name}

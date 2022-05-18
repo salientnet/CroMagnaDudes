@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box, Typography, IconButton, Select, MenuItem } from "@mui/material";
-import LoadingButton from "@mui/lab/LoadingButton";
+import { Box, Typography, IconButton } from "@mui/material";
 import Web3 from "web3";
 import Modal from "react-modal";
 import CloseIcon from "@mui/icons-material/Close";
@@ -8,6 +7,7 @@ import Image from "material-ui-image";
 
 import { useAuthContext } from "../contexts/AuthContext";
 import { useSnackbar } from "../contexts/Snackbar";
+import { NFT_TYPE } from "../helper/types";
 import { numberWithCommas, fromWei, toWei } from "../helper/utils";
 import {
   totalSupply,
@@ -17,20 +17,32 @@ import {
   tokenURI,
 } from "../helper/contract";
 import ImageLoading from "../components/ImageLoading";
+import StoneAgeImage from "../assets/images/stone_age.png";
+import MintCard from "../components/MintCard";
 
 const Home = () => {
-  const [mintPrice, setMintPrice] = useState<number>(0);
-  const [mintQuantity, setMintQuantity] = useState<number>(1);
-  const [isMinting, setIsMinting] = useState<boolean>(false);
-  const [totalCounts, setTotalCounts] = useState(0);
-  const [modalIsOpen, setIsOpen] = useState(false);
-  const [newTokenInfo, setNewTokenInfo] = useState<any>(null);
   const { address } = useAuthContext();
   const { showSnackbar } = useSnackbar();
 
+  const [tierPrice, setTierPrice] = useState({
+    [NFT_TYPE.TIER_1]: 0,
+    [NFT_TYPE.TIER_2]: 0,
+    [NFT_TYPE.TIER_3]: 0,
+  });
+  const [quantity, setQuantity] = useState({
+    [NFT_TYPE.TIER_1]: 1,
+    [NFT_TYPE.TIER_2]: 1,
+    [NFT_TYPE.TIER_3]: 1,
+  });
+  const [minting, setMinting] = useState<NFT_TYPE | undefined>(undefined);
+
+  // const [totalCounts, setTotalCounts] = useState(0);
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [newTokenInfo, setNewTokenInfo] = useState<any>(null);
+
   web3Instance.setProvider(Web3.givenProvider);
 
-  const handleMint = () => {
+  const handleMint = (type: NFT_TYPE) => {
     if (!address) {
       showSnackbar({
         severity: "error",
@@ -40,22 +52,23 @@ const Home = () => {
       return;
     }
 
-    setIsMinting(true);
-    const amount = toWei((mintPrice * mintQuantity).toString());
+    setMinting(type);
 
-    mint(address, amount, mintQuantity)
+    const amount = toWei((tierPrice[type] * quantity[type]).toString());
+
+    mint(address, amount, quantity[type], type)
       .then(async (res: any) => {
         const tokenId = res.events.Transfer.returnValues.tokenId;
-        const uri = await tokenURI(+tokenId);
+        const uri = await tokenURI(+tokenId, type);
         const newTokenInfo = await (await fetch(uri)).json();
 
         setNewTokenInfo(newTokenInfo);
         setIsOpen(true);
-        setIsMinting(false);
+        setMinting(undefined);
       })
       .catch((err: any) => {
-        console.log(err);
-        setIsMinting(false);
+        console.error(err);
+        setMinting(undefined);
         showSnackbar({
           severity: "error",
           message: "Failed to mint",
@@ -63,8 +76,11 @@ const Home = () => {
       });
   };
 
-  const handleQuantity = (e: any) => {
-    setMintQuantity(e.target.value);
+  const handleQuantity = (e: any, type: NFT_TYPE) => {
+    setQuantity((v) => ({
+      ...v,
+      [type]: e.target.value,
+    }));
   };
 
   const closeModal = () => {
@@ -87,28 +103,22 @@ const Home = () => {
     },
   };
 
-  const selectOptionsEl = () => {
-    const options = [];
-
-    for (let i = 1; i <= 10; i++) {
-      options.push(
-        <MenuItem value={i} key={i}>
-          {i}
-        </MenuItem>
-      );
-    }
-
-    return options;
-  };
-
   useEffect(() => {
     if (address) {
-      totalSupply().then((res: any) => {
-        setTotalCounts(res);
-      });
+      // totalSupply().then((res: any) => {
+      //   setTotalCounts(res);
+      // });
 
-      getMintPrice().then((price: any) => {
-        setMintPrice(parseInt(fromWei(price)));
+      Promise.all([
+        getMintPrice(NFT_TYPE.TIER_1),
+        getMintPrice(NFT_TYPE.TIER_2),
+        getMintPrice(NFT_TYPE.TIER_3),
+      ]).then(([tier1Price, tier2Price, tier3Price]) => {
+        setTierPrice({
+          [NFT_TYPE.TIER_1]: parseFloat(fromWei(tier1Price)),
+          [NFT_TYPE.TIER_2]: parseFloat(fromWei(tier2Price)),
+          [NFT_TYPE.TIER_3]: parseFloat(fromWei(tier3Price)),
+        });
       });
     }
   }, [address]);
@@ -164,41 +174,36 @@ const Home = () => {
           <Typography mt="20px">{newTokenInfo.description}</Typography>
         </Modal>
       )}
-      <Typography fontSize="3rem" mt="50px" color="#000" component="h2">
+      {/* <Typography fontSize="3rem" mt="50px" color="#000" component="h2">
         CROmagnaDude
         <Typography component="div" fontSize="1.5rem" textAlign="center">
           {totalCounts} / {numberWithCommas(10000)} Minted
         </Typography>
-      </Typography>
+      </Typography> */}
       <Box
         sx={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          marginTop: "200px",
-          width: "500px",
-          height: "200px",
-          backgroundColor: "#de8e4b",
+          justifyContent: "space-around",
+          marginTop: "100px",
+          width: "100%",
+          backgroundColor: "#b4b8ba",
           borderRadius: "10px",
+          padding: "30px",
         }}
       >
-        <Select
-          value={mintQuantity}
-          onChange={handleQuantity}
-          sx={{ backgroundColor: "common.white", height: "40px" }}
-        >
-          {selectOptionsEl()}
-        </Select>
-        <LoadingButton
-          onClick={handleMint}
-          loading={isMinting}
-          variant="contained"
-          sx={{
-            height: "40px",
-          }}
-        >
-          Mint
-        </LoadingButton>
+        {Object.values(NFT_TYPE).map((type) => (
+          <MintCard
+            title={`${type} Age`}
+            mintPrice={tierPrice[type]}
+            imgSrc={StoneAgeImage}
+            mintQuantity={quantity[type]}
+            isMinting={!!minting && minting === type}
+            disabled={!!minting && minting !== type}
+            handleQuantity={(e) => handleQuantity(e, type)}
+            handleMint={() => handleMint(type)}
+          />
+        ))}
       </Box>
     </Box>
   );
