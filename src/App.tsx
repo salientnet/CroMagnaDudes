@@ -12,7 +12,7 @@ function App() {
     <div className="app">
       <Header />
       <Container
-        sx={{ flexGrow: 1, paddingTop: "40px", paddingBottom: "40px" }}
+        sx={{ flexGrow: 1, paddingTop: "80px", paddingBottom: "120px" }}
       >
         <Routes>
           <Route path="/" element={<Home />} />

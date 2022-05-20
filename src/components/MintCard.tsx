@@ -5,6 +5,7 @@ import {
   CardActions,
   Select,
   MenuItem,
+  Box,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 
@@ -51,30 +52,50 @@ const MintCard = (props: MintCardProps) => {
     <Card
       sx={{
         ...styles,
-        maxWidth: "300px",
-        backgroundColor: "grey.300",
       }}
     >
       <CardHeader
-        title={title}
-        subheader={`${mintPrice} CRO / count`}
-        sx={{ textAlign: "center" }}
+        title={
+          <Box
+            sx={{
+              fontSize: "24px",
+              fontFamily: "'sOuTh Afirkas 2100'",
+              color: "text.secondary",
+            }}
+          >
+            {title}
+          </Box>
+        }
+        subheader={
+          <Box
+            sx={{
+              fontSize: "14px",
+              fontFamily: "'sOuTh Afirkas 2100'",
+              color: "text.secondary",
+            }}
+          >
+            {mintPrice} CRO / count
+          </Box>
+        }
+        sx={{
+          textAlign: "right",
+        }}
       />
       <CardMedia
         component="img"
         image={imgSrc}
         alt={title}
         sx={{
-          borderTop: "1px solid",
-          borderBottom: "1px solid",
-          borderColor: "grey.400",
+          height: "330px",
+          padding: "15px 0",
         }}
       />
-      <CardActions sx={{ justifyContent: "space-around" }}>
+      <CardActions>
         <Select
           value={mintQuantity}
           onChange={(event) => handleQuantity(event)}
           sx={{
+            color: "secondary.main",
             backgroundColor: "common.white",
             width: "70px",
             height: "40px",
@@ -87,8 +108,13 @@ const MintCard = (props: MintCardProps) => {
           loading={isMinting}
           disabled={disabled}
           variant="contained"
+          color="secondary"
           sx={{
             height: "40px",
+            minWidth: "70px",
+            "&:hover": {
+              backgroundColor: "#343232",
+            },
           }}
         >
           Mint

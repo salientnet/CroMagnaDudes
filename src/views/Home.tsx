@@ -17,12 +17,24 @@ import {
   tokenURI,
 } from "../helper/contract";
 import ImageLoading from "../components/ImageLoading";
-import StoneAgeImage from "../assets/images/stone_age.png";
 import MintCard from "../components/MintCard";
+
+import Tier1AgeImage from "../assets/images/tier_1.png";
+import Tier2AgeImage from "../assets/images/tier_2.png";
+import Tier3AgeImage from "../assets/images/tier_3.png";
+import BannerTier1 from "../assets/images/banner/tier_1.png";
+import BannerTier2 from "../assets/images/banner/tier_2.png";
+import BannerTier3 from "../assets/images/banner/tier_3.png";
 
 const Home = () => {
   const { address } = useAuthContext();
   const { showSnackbar } = useSnackbar();
+
+  const TIER_IMAGES = {
+    [NFT_TYPE.TIER_1]: Tier1AgeImage,
+    [NFT_TYPE.TIER_2]: Tier2AgeImage,
+    [NFT_TYPE.TIER_3]: Tier3AgeImage,
+  };
 
   const [tierPrice, setTierPrice] = useState({
     [NFT_TYPE.TIER_1]: 0,
@@ -174,36 +186,197 @@ const Home = () => {
           <Typography mt="20px">{newTokenInfo.description}</Typography>
         </Modal>
       )}
-      {/* <Typography fontSize="3rem" mt="50px" color="#000" component="h2">
-        CROmagnaDude
-        <Typography component="div" fontSize="1.5rem" textAlign="center">
-          {totalCounts} / {numberWithCommas(10000)} Minted
-        </Typography>
-      </Typography> */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-around",
-          marginTop: "100px",
           width: "100%",
-          backgroundColor: "#b4b8ba",
-          borderRadius: "10px",
-          padding: "30px",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        {Object.values(NFT_TYPE).map((type) => (
-          <MintCard
-            title={`${type} Age`}
-            mintPrice={tierPrice[type]}
-            imgSrc={StoneAgeImage}
-            mintQuantity={quantity[type]}
-            isMinting={!!minting && minting === type}
-            disabled={!!minting && minting !== type}
-            handleQuantity={(e) => handleQuantity(e, type)}
-            handleMint={() => handleMint(type)}
-          />
-        ))}
+        <Box
+          sx={{
+            fontSize: "60px",
+            lineHeight: "76px",
+            textAlign: "center",
+            fontFamily: "'sOuTh Afirkas 2100'",
+          }}
+        >
+          AN AUTOSTAKING PASSIVE{" "}
+          <Box component="span" sx={{ color: "primary.main" }}>
+            INCOME GENERATING
+          </Box>{" "}
+          NFT GEM
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            my: "117px",
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 4,
+              maxWidth: "300px",
+
+              img: {
+                width: "100%",
+              },
+            }}
+          >
+            <img src={BannerTier2} alt="banner-bronze" />
+            <img src={BannerTier2} alt="banner-bronze" />
+          </Box>
+          <Box
+            sx={{
+              img: {
+                width: "100%",
+              },
+            }}
+          >
+            <img src={BannerTier3} alt="banner-iron" />
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 4,
+              maxWidth: "300px",
+
+              img: {
+                width: "100%",
+              },
+            }}
+          >
+            <img src={BannerTier1} alt="banner-stone" />
+            <img src={BannerTier1} alt="banner-stone" />
+          </Box>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          width: "100%",
+        }}
+      >
+        <Box
+          sx={{
+            fontWeight: "500",
+            fontSize: "32px",
+            lineHeight: "49px",
+            textAlign: "center",
+          }}
+        >
+          CROmagnaDudes are a three tier collection of passive income generating
+          NFTs. Staking is automatic and rewards are harvested weekly.
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: "100px",
+            gap: 15,
+          }}
+        >
+          <Box
+            sx={{
+              fontFamily: "'sOuTh Afirkas 2100'",
+              textAlign: "center",
+            }}
+          >
+            <Box
+              sx={{
+                color: "primary.main",
+                fontSize: "48px",
+                marginBottom: "5px",
+              }}
+            >
+              10k
+            </Box>
+            <Box
+              sx={{
+                fontSize: "24px",
+              }}
+            >
+              Minted
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              fontFamily: "'sOuTh Afirkas 2100'",
+              textAlign: "center",
+            }}
+          >
+            <Box
+              sx={{
+                color: "primary.main",
+                fontSize: "48px",
+                marginBottom: "5px",
+              }}
+            >
+              500 cro
+            </Box>
+            <Box
+              sx={{
+                fontSize: "24px",
+              }}
+            >
+              Total Earnings
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              fontFamily: "'sOuTh Afirkas 2100'",
+              textAlign: "center",
+            }}
+          >
+            <Box
+              sx={{
+                color: "primary.main",
+                fontSize: "48px",
+                marginBottom: "5px",
+              }}
+            >
+              1k+
+            </Box>
+            <Box
+              sx={{
+                fontSize: "24px",
+              }}
+            >
+              Holders
+            </Box>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: "100px",
+            gap: 7,
+          }}
+        >
+          {Object.values(NFT_TYPE).map((type, i) => (
+            <MintCard
+              key={i}
+              title={`${type} Age`}
+              mintPrice={tierPrice[type]}
+              imgSrc={TIER_IMAGES[type]}
+              mintQuantity={quantity[type]}
+              isMinting={!!minting && minting === type}
+              disabled={!!minting && minting !== type}
+              handleQuantity={(e) => handleQuantity(e, type)}
+              handleMint={() => handleMint(type)}
+            />
+          ))}
+        </Box>
       </Box>
     </Box>
   );

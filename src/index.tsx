@@ -5,6 +5,7 @@ import "react-image-lightbox/style.css";
 
 import reportWebVitals from "./reportWebVitals";
 import App from "./App";
+import ThemeProvider from "./theme";
 import { AuthProvider } from "./contexts/AuthContext";
 import { SnackbarProvider } from "./contexts/Snackbar";
 
@@ -16,13 +17,15 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <SnackbarProvider>
-      <Router>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </Router>
-    </SnackbarProvider>
+    <ThemeProvider>
+      <SnackbarProvider>
+        <Router>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </Router>
+      </SnackbarProvider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 
