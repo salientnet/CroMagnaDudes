@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import { Container } from "@mui/material";
 
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import Home from "./views/Home";
 import NFTList from "./views/NFTList";
 
@@ -11,6 +12,7 @@ function App() {
   return (
     <div className="app">
       <Header />
+
       <Container
         sx={{ flexGrow: 1, paddingTop: "80px", paddingBottom: "120px" }}
       >
@@ -20,6 +22,8 @@ function App() {
           {/* <Route path="/*" element={<NotFound />} /> */}
         </Routes>
       </Container>
+
+      <Footer />
     </div>
   );
 }

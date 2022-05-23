@@ -232,13 +232,7 @@ const Home = () => {
             <img src={BannerTier2} alt="banner-bronze" />
             <img src={BannerTier2} alt="banner-bronze" />
           </Box>
-          <Box
-            sx={{
-              img: {
-                width: "100%",
-              },
-            }}
-          >
+          <Box sx={{ img: { width: "100%" } }}>
             <img src={BannerTier3} alt="banner-iron" />
           </Box>
           <Box
@@ -275,6 +269,7 @@ const Home = () => {
           CROmagnaDudes are a three tier collection of passive income generating
           NFTs. Staking is automatic and rewards are harvested weekly.
         </Box>
+
         <Box
           sx={{
             display: "flex",
@@ -299,14 +294,9 @@ const Home = () => {
             >
               10k
             </Box>
-            <Box
-              sx={{
-                fontSize: "24px",
-              }}
-            >
-              Minted
-            </Box>
+            <Box sx={{ fontSize: "24px" }}>Minted</Box>
           </Box>
+
           <Box
             sx={{
               fontFamily: "'sOuTh Afirkas 2100'",
@@ -322,14 +312,9 @@ const Home = () => {
             >
               500 cro
             </Box>
-            <Box
-              sx={{
-                fontSize: "24px",
-              }}
-            >
-              Total Earnings
-            </Box>
+            <Box sx={{ fontSize: "24px" }}>Total Earnings</Box>
           </Box>
+
           <Box
             sx={{
               fontFamily: "'sOuTh Afirkas 2100'",
@@ -345,15 +330,10 @@ const Home = () => {
             >
               1k+
             </Box>
-            <Box
-              sx={{
-                fontSize: "24px",
-              }}
-            >
-              Holders
-            </Box>
+            <Box sx={{ fontSize: "24px" }}>Holders</Box>
           </Box>
         </Box>
+
         <Box
           sx={{
             display: "flex",
