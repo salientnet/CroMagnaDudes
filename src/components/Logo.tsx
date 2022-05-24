@@ -5,7 +5,7 @@ import LogoImage from "../assets/images/logo.jpg";
 
 interface LogoProps {
   inHeader: boolean;
-  textStyle: any;
+  textStyle?: any;
   logoWidth: string;
 }
 

@@ -9,6 +9,13 @@ import {
   Stack,
   Select,
   MenuItem,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
 } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 import Image from "material-ui-image";
@@ -98,8 +105,11 @@ const NFTList = () => {
     );
   };
 
-  const changeType = (e: any) => {
-    setNftType(e.target.value);
+  const changeType = async (e: any) => {
+    const type: NFT_TYPE = e.target.value;
+
+    setNftType(type);
+    await fetchNFTData(type, nftCounts[type]);
   };
 
   const claim = (type: NFT_TYPE) => {
@@ -122,34 +132,63 @@ const NFTList = () => {
       });
   };
 
-  const fetchNFTData = async (type: NFT_TYPE) => {
+  const fetchReflectionBalances = async () => {
+    setIsLoading(true);
+
+    const types = Object.values(NFT_TYPE);
+
+    for (let i = 0; i < types.length; i++) {
+      const type = types[i];
+
+      try {
+        const counts = await balanceOf(address, type);
+        setNftCounts((v) => ({
+          ...v,
+          [type]: counts,
+        }));
+
+        if (+counts === 0) {
+          setNoNFT((v) => ({
+            ...v,
+            [type]: true,
+          }));
+
+          continue;
+        }
+
+        const reflections = await getReflectionBalances(address, type);
+        setReflectionBalances((v) => ({
+          ...v,
+          [type]: parseFloat(fromWei(reflections)).toFixed(2),
+        }));
+
+        if (type === NFT_TYPE.TIER_1) {
+          await fetchNFTData(type, counts);
+        }
+      } catch (err: any) {
+        setIsLoading(false);
+        showSnackbar({
+          severity: "error",
+          message: "Failed to fetch balances",
+        });
+
+        break;
+      }
+    }
+
+    setIsLoading(false);
+  };
+
+  const fetchNFTData = async (type: NFT_TYPE, nftCounts: any) => {
+    if (+nftCounts === 0) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const counts = await balanceOf(address, type);
-      setNftCounts((v) => ({
-        ...v,
-        [type]: counts,
-      }));
-
-      if (+counts === 0) {
-        setNoNFT((v) => ({
-          ...v,
-          [type]: true,
-        }));
-        setIsLoading(false);
-
-        return;
-      }
-
-      const reflections = await getReflectionBalances(address, type);
-      setReflectionBalances((v) => ({
-        ...v,
-        [type]: parseFloat(fromWei(reflections)).toFixed(2),
-      }));
-
       let tokenIds = [] as any;
-      for (let index = 0; index < +counts; index++) {
+      for (let index = 0; index < +nftCounts; index++) {
         tokenIds.push(await tokenOfOwnerByIndex(address, index, type));
       }
 
@@ -177,9 +216,9 @@ const NFTList = () => {
 
   useEffect(() => {
     if (address) {
-      fetchNFTData(nftType);
+      fetchReflectionBalances();
     }
-  }, [address, nftType]);
+  }, [address]);
 
   return (
     <>
@@ -187,11 +226,77 @@ const NFTList = () => {
         <Loading />
       ) : (
         <>
+          <TableContainer
+            component={Paper}
+            sx={{
+              backgroundColor: "primary.main",
+              color: "text.secondary",
+              marginBottom: "40px",
+            }}
+          >
+            <Table>
+              <TableHead>
+                <TableRow
+                  sx={{
+                    th: {
+                      color: "text.secondary",
+                      borderColor: "#a65b18",
+                      fontSize: "calc(10px + 2vmin)",
+                    },
+                  }}
+                >
+                  <TableCell align="center">Age</TableCell>
+                  <TableCell align="center">Total Counts Minted</TableCell>
+                  <TableCell align="center">Total Rewards</TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {Object.values(NFT_TYPE).map((type) => (
+                  <TableRow
+                    key={type}
+                    sx={{
+                      td: {
+                        color: "text.secondary",
+                        border: 0,
+                        fontSize: "calc(10px + 1vmin)",
+                      },
+                    }}
+                  >
+                    <TableCell align="center">{type} Age</TableCell>
+                    <TableCell align="center">{nftCounts[type]}</TableCell>
+                    <TableCell align="center">
+                      {reflectionBalances[type]}
+                    </TableCell>
+                    <TableCell align="center">
+                      <LoadingButton
+                        onClick={() => claim(type)}
+                        loading={isClaiming}
+                        variant="contained"
+                        disabled={parseFloat(reflectionBalances[type]) === 0}
+                        color="secondary"
+                        sx={{
+                          height: "40px",
+                          minWidth: "70px",
+                          "&:hover": {
+                            backgroundColor: "#343232",
+                          },
+                        }}
+                      >
+                        Claim
+                      </LoadingButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
           <Select
             value={nftType}
             onChange={changeType}
             sx={{
-              backgroundColor: "common.white",
+              color: "text.secondary",
+              backgroundColor: "primary.main",
               marginBottom: "16px",
               minWidth: "150px",
             }}
@@ -202,70 +307,6 @@ const NFTList = () => {
               </MenuItem>
             ))}
           </Select>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-around",
-              alignItems: "center",
-              backgroundColor: "#b4b8ba",
-              height: "300px",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "50px",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                component="h2"
-                fontSize="2rem"
-                color="#fff"
-                textTransform="capitalize"
-              >
-                Total counts minted
-              </Typography>
-              <Typography fontSize="2rem" fontWeight={600} color="#fff">
-                {nftCounts[nftType]}
-              </Typography>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <Typography
-                component="h2"
-                fontSize="2rem"
-                color="#fff"
-                textTransform="capitalize"
-              >
-                Total rewards
-              </Typography>
-              <Typography
-                fontSize="2rem"
-                fontWeight={600}
-                mb="20px"
-                color="#fff"
-              >
-                {reflectionBalances[nftType]}
-              </Typography>
-              <LoadingButton
-                onClick={() => claim(nftType)}
-                loading={isClaiming}
-                variant="contained"
-                disabled={parseFloat(reflectionBalances[nftType]) === 0}
-              >
-                Claim
-              </LoadingButton>
-            </Box>
-          </Box>
           {noNFT[nftType] ? (
             <Box>
               <Typography fontSize="2rem" color="#fff" textAlign="center">
