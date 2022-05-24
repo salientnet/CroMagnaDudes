@@ -37,7 +37,14 @@ const Footer = () => {
             justifyContent: "space-between",
           }}
         >
-          <Box sx={{ flex: 1 }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <Logo
               inHeader={false}
               logoWidth="80px"
@@ -57,7 +64,14 @@ const Footer = () => {
               Copyright &copy; 2022. CroCoDudes. All rights reserved
             </Box>
           </Box>
-          <Box sx={{ flex: 1 }}>
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <Box
               sx={{
                 fontSize: "64px",
